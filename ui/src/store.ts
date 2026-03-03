@@ -1,5 +1,5 @@
 import { Signal } from 'signal-polyfill';
-import type { Agent, FeedMessage, SwarmState } from '../types.js';
+import type { Agent, FeedMessage, GatewayInfo, OnboardStep, SwarmState } from './types.js';
 
 // --- Demo seed agents ---
 const SEED_AGENTS: Agent[] = [
@@ -28,11 +28,14 @@ const SEED_AGENTS: Agent[] = [
 ];
 
 // --- Signals ---
-export const agentsSignal = new Signal.State<Agent[]>(SEED_AGENTS);
-export const connectedSignal = new Signal.State<boolean>(false);
-export const feedSignal = new Signal.State<FeedMessage[]>([]);
-export const activeViewSignal = new Signal.State<'swarm' | 'feed' | 'settings'>('swarm');
-export const deployingSignal = new Signal.State<boolean>(false);
+export const agentsSignal          = new Signal.State<Agent[]>(SEED_AGENTS);
+export const connectedSignal       = new Signal.State<boolean>(false);
+export const feedSignal            = new Signal.State<FeedMessage[]>([]);
+export const activeViewSignal      = new Signal.State<'swarm' | 'feed' | 'settings' | 'onboard'>('swarm');
+export const deployingSignal       = new Signal.State<boolean>(false);
+export const gatewayInfoSignal     = new Signal.State<GatewayInfo | null>(null);
+export const onboardStepSignal     = new Signal.State<OnboardStep>('welcome');
+export const onboardDoneSignal     = new Signal.State<boolean>(false);
 
 // --- Derived ---
 export const swarmStateSignal = new Signal.Computed<SwarmState>(() => {
@@ -57,6 +60,6 @@ export function addFeedMessage(msg: Omit<FeedMessage, 'id' | 'timestamp'>) {
     id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
     timestamp: Date.now(),
   };
-  feedSignal.set([...feedSignal.get(), next]);
+  feedSignal.set([...feedSignal.get().slice(-200), next]);
   return next;
 }

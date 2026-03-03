@@ -173,6 +173,12 @@ export class ProxyHeader extends SignalWatcher(LitElement) {
 
     .avatar-btn:hover { opacity: 0.85; }
 
+    .avatar-btn.onboard-active {
+      background: var(--color-working-dim);
+      border: 1px solid var(--color-working);
+      color: var(--color-working);
+    }
+
     .active-count {
       font-size: var(--text-xs);
       color: var(--color-text-muted);
@@ -191,7 +197,7 @@ export class ProxyHeader extends SignalWatcher(LitElement) {
 
   @state() private menuOpen = false;
 
-  private setView(v: 'swarm' | 'feed' | 'settings') {
+  private setView(v: 'swarm' | 'feed' | 'settings' | 'onboard') {
     activeViewSignal.set(v);
   }
 
@@ -249,8 +255,16 @@ export class ProxyHeader extends SignalWatcher(LitElement) {
             <span class="dot"></span>
             ${connected ? 'Live' : 'Local'}
           </div>
-          <button class="avatar-btn" aria-label="Profile">
-            PO
+          <button
+            class="avatar-btn ${view === 'onboard' ? 'onboard-active' : ''}"
+            aria-label="Setup wizard"
+            @click=${() => this.setView('onboard')}
+            title="Onboarding wizard"
+          >
+            ${view === 'onboard'
+              ? html`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><polyline points="20 6 9 17 4 12"/></svg>`
+              : html`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
+            }
           </button>
         </div>
       </header>

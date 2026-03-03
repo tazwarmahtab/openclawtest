@@ -34,3 +34,15 @@ export interface GatewayMessage {
   type: string;
   payload?: unknown;
 }
+
+export interface GatewayInfo {
+  version: string;
+  port: number;
+}
+
+export type OnboardStep =
+  | 'welcome'
+  | 'install'
+  | 'model'
+  | 'channel'
+  | 'done';

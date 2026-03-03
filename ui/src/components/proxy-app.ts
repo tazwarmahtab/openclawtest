@@ -7,6 +7,7 @@ import './swarm-panel.js';
 import './feed-panel.js';
 import './settings-panel.js';
 import './deploy-bar.js';
+import './onboard-wizard.js';
 
 @customElement('proxy-app')
 export class ProxyApp extends SignalWatcher(LitElement) {
@@ -20,6 +21,7 @@ export class ProxyApp extends SignalWatcher(LitElement) {
 
     proxy-header {
       flex-shrink: 0;
+      max-width: 100%;
     }
 
     .view-container {
@@ -35,11 +37,6 @@ export class ProxyApp extends SignalWatcher(LitElement) {
       max-width: var(--max-content-width);
       width: 100%;
       margin: 0 auto;
-    }
-
-    /* Full-width header */
-    proxy-header {
-      max-width: 100%;
     }
 
     @media (min-width: 720px) {
@@ -60,20 +57,20 @@ export class ProxyApp extends SignalWatcher(LitElement) {
 
   render() {
     const view = activeViewSignal.get();
+    const isOnboard = view === 'onboard';
 
     return html`
       <proxy-header></proxy-header>
 
       <main class="view-container" role="main">
-        ${view === 'swarm'
-          ? html`<swarm-panel></swarm-panel>`
-          : view === 'feed'
-          ? html`<feed-panel></feed-panel>`
+        ${view === 'swarm'    ? html`<swarm-panel></swarm-panel>`
+          : view === 'feed'    ? html`<feed-panel></feed-panel>`
+          : view === 'onboard' ? html`<onboard-wizard></onboard-wizard>`
           : html`<settings-panel></settings-panel>`
         }
       </main>
 
-      <deploy-bar></deploy-bar>
+      ${!isOnboard ? html`<deploy-bar></deploy-bar>` : ''}
     `;
   }
 }
