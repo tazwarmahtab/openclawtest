@@ -71,7 +71,7 @@
     "deadcode:report:ci:ts-unused": "mkdir -p .artifacts/deadcode && pnpm deadcode:ts-unused > .artifacts/deadcode/ts-unused-exports.txt 2>&1 || true",
     "deadcode:ts-prune": "pnpm dlx ts-prune src extensions scripts",
     "deadcode:ts-unused": "pnpm dlx ts-unused-exports tsconfig.json --ignoreTestFiles --exitWithCount",
-    "dev": "node scripts/run-node.mjs",
+    "dev": "node scripts/run-node.mjs gateway",
     "docs:bin": "node scripts/build-docs-list.mjs",
     "docs:check-links": "node scripts/docs-link-audit.mjs",
     "docs:dev": "cd docs && mint dev",
