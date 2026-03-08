@@ -2,6 +2,9 @@ export function splitTrailingAuthProfile(raw: string): {
   model: string;
   profile?: string;
 } {
+  if (!raw) {
+    return { model: "" };
+  }
   const trimmed = raw.trim();
   if (!trimmed) {
     return { model: "" };
