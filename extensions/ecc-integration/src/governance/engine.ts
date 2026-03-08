@@ -276,7 +276,7 @@ export class GovernanceEngine {
   private getApplicableRules(
     agent: Agent,
     action: string,
-    context: Record<string, unknown>,
+    _context: Record<string, unknown>,
   ): GovernanceRule[] {
     return Array.from(this.rules.values()).filter((rule) => {
       // Simple condition matching - could be more sophisticated
@@ -292,7 +292,7 @@ export class GovernanceEngine {
     rule: GovernanceRule,
     agent: Agent,
     action: string,
-    context: Record<string, unknown>,
+    _context: Record<string, unknown>,
   ): RuleEvaluation {
     // Rule evaluation logic
     switch (rule.id) {

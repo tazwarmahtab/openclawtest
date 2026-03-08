@@ -1,12 +1,12 @@
 /**
  * NVIDIA NIM Provider
- * 
+ *
  * Integration with NVIDIA's free NIM (NVIDIA Inference Microservices) API.
  * Provides access to state-of-the-art models with reasoning capabilities.
- * 
+ *
  * API Base: https://integrate.api.nvidia.com/v1
  * Format: OpenAI-compatible
- * 
+ *
  * Supported Models:
  * - qwen/qwen3.5-397b-a17b (397B parameters, reasoning)
  * - z-ai/glm5 (Large reasoning model)
@@ -21,24 +21,24 @@
  * - google/gemma-3n-e2b-it
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 // ============================================================================
 // Configuration Types
 // ============================================================================
 
 export const NVIDIAModelSchema = z.enum([
-  'qwen/qwen3.5-397b-a17b',
-  'z-ai/glm5',
-  'z-ai/glm4.7',
-  'moonshotai/kimi-k2.5',
-  'moonshotai/kimi-k2-instruct-0905',
-  'deepseek-ai/deepseek-v3.2',
-  'minimaxai/minimax-m2.5',
-  'stepfun-ai/step-3.5-flash',
-  'stockmark/stockmark-2-100b-instruct',
-  'nvidia/nemotron-mini-4b-instruct',
-  'google/gemma-3n-e2b-it'
+  "qwen/qwen3.5-397b-a17b",
+  "z-ai/glm5",
+  "z-ai/glm4.7",
+  "moonshotai/kimi-k2.5",
+  "moonshotai/kimi-k2-instruct-0905",
+  "deepseek-ai/deepseek-v3.2",
+  "minimaxai/minimax-m2.5",
+  "stepfun-ai/step-3.5-flash",
+  "stockmark/stockmark-2-100b-instruct",
+  "nvidia/nemotron-mini-4b-instruct",
+  "google/gemma-3n-e2b-it",
 ]);
 
 export interface NVIDIAProviderConfig {
@@ -94,36 +94,36 @@ export interface ModelCapability {
   parameters: string;
   contextWindow: number;
   maxTokens: number;
-  
+
   // Capability scores (0-1)
-  reasoning: number;      // Logical reasoning, chain-of-thought
-  coding: number;         // Code generation, debugging
-  analysis: number;       // Data analysis, summarization
-  creativity: number;   // Creative writing, ideation
-  instruction: number;  // Following complex instructions
-  math: number;         // Mathematical reasoning
+  reasoning: number; // Logical reasoning, chain-of-thought
+  coding: number; // Code generation, debugging
+  analysis: number; // Data analysis, summarization
+  creativity: number; // Creative writing, ideation
+  instruction: number; // Following complex instructions
+  math: number; // Mathematical reasoning
   multilingual: number; // Non-English languages
-  speed: number;        // Response speed (higher = faster)
-  
+  speed: number; // Response speed (higher = faster)
+
   // Special features
   supportsThinking: boolean;
   supportsVision: boolean;
   supportsStreaming: boolean;
   supportsTools: boolean;
-  
+
   // Use case recommendations
   bestFor: string[];
   avoidFor: string[];
-  
+
   // Token pricing (relative)
-  costTier: 'free' | 'low' | 'medium';
+  costTier: "free" | "low" | "medium";
 }
 
 export const NVIDIA_MODEL_CAPABILITIES: ModelCapability[] = [
   {
-    model: 'qwen/qwen3.5-397b-a17b',
-    displayName: 'Qwen 3.5 397B',
-    parameters: '397B',
+    model: "qwen/qwen3.5-397b-a17b",
+    displayName: "Qwen 3.5 397B",
+    parameters: "397B",
     contextWindow: 32768,
     maxTokens: 16384,
     reasoning: 0.95,
@@ -131,25 +131,25 @@ export const NVIDIA_MODEL_CAPABILITIES: ModelCapability[] = [
     analysis: 0.94,
     creativity: 0.88,
     instruction: 0.93,
-    math: 0.90,
+    math: 0.9,
     multilingual: 0.91,
-    speed: 0.60,  // Large model, slower
+    speed: 0.6, // Large model, slower
     supportsThinking: true,
     supportsVision: false,
     supportsStreaming: true,
     supportsTools: true,
-    bestFor: ['complex reasoning', 'code architecture', 'system design', 'deep analysis'],
-    avoidFor: ['quick responses', 'simple queries'],
-    costTier: 'free'
+    bestFor: ["complex reasoning", "code architecture", "system design", "deep analysis"],
+    avoidFor: ["quick responses", "simple queries"],
+    costTier: "free",
   },
   {
-    model: 'z-ai/glm5',
-    displayName: 'GLM-5',
-    parameters: 'Unknown',
+    model: "z-ai/glm5",
+    displayName: "GLM-5",
+    parameters: "Unknown",
     contextWindow: 32768,
     maxTokens: 16384,
     reasoning: 0.93,
-    coding: 0.90,
+    coding: 0.9,
     analysis: 0.92,
     creativity: 0.85,
     instruction: 0.91,
@@ -160,37 +160,37 @@ export const NVIDIA_MODEL_CAPABILITIES: ModelCapability[] = [
     supportsVision: false,
     supportsStreaming: true,
     supportsTools: true,
-    bestFor: ['reasoning tasks', 'document analysis', 'step-by-step instructions'],
-    avoidFor: ['real-time chat'],
-    costTier: 'free'
+    bestFor: ["reasoning tasks", "document analysis", "step-by-step instructions"],
+    avoidFor: ["real-time chat"],
+    costTier: "free",
   },
   {
-    model: 'z-ai/glm4.7',
-    displayName: 'GLM-4.7',
-    parameters: 'Unknown',
+    model: "z-ai/glm4.7",
+    displayName: "GLM-4.7",
+    parameters: "Unknown",
     contextWindow: 32768,
     maxTokens: 16384,
-    reasoning: 0.90,
+    reasoning: 0.9,
     coding: 0.88,
     analysis: 0.89,
     creativity: 0.82,
     instruction: 0.88,
     math: 0.85,
     multilingual: 0.85,
-    speed: 0.70,
+    speed: 0.7,
     supportsThinking: true,
     supportsVision: false,
     supportsStreaming: true,
     supportsTools: true,
-    bestFor: ['balanced tasks', 'general purpose'],
-    avoidFor: ['specialized reasoning'],
-    costTier: 'free'
+    bestFor: ["balanced tasks", "general purpose"],
+    avoidFor: ["specialized reasoning"],
+    costTier: "free",
   },
   {
-    model: 'moonshotai/kimi-k2.5',
-    displayName: 'Kimi K2.5',
-    parameters: 'Unknown',
-    contextWindow: 200000,  // 200K context!
+    model: "moonshotai/kimi-k2.5",
+    displayName: "Kimi K2.5",
+    parameters: "Unknown",
+    contextWindow: 200000, // 200K context!
     maxTokens: 16384,
     reasoning: 0.92,
     coding: 0.89,
@@ -198,25 +198,25 @@ export const NVIDIA_MODEL_CAPABILITIES: ModelCapability[] = [
     creativity: 0.87,
     instruction: 0.92,
     math: 0.87,
-    multilingual: 0.90,
+    multilingual: 0.9,
     speed: 0.68,
     supportsThinking: true,
     supportsVision: false,
     supportsStreaming: true,
     supportsTools: true,
-    bestFor: ['long context', 'document processing', 'large codebase analysis'],
-    avoidFor: ['quick tasks'],
-    costTier: 'free'
+    bestFor: ["long context", "document processing", "large codebase analysis"],
+    avoidFor: ["quick tasks"],
+    costTier: "free",
   },
   {
-    model: 'deepseek-ai/deepseek-v3.2',
-    displayName: 'DeepSeek V3.2',
-    parameters: 'Unknown',
+    model: "deepseek-ai/deepseek-v3.2",
+    displayName: "DeepSeek V3.2",
+    parameters: "Unknown",
     contextWindow: 32768,
     maxTokens: 8192,
     reasoning: 0.91,
-    coding: 0.93,  // Excellent for code
-    analysis: 0.90,
+    coding: 0.93, // Excellent for code
+    analysis: 0.9,
     creativity: 0.84,
     instruction: 0.89,
     math: 0.88,
@@ -226,14 +226,14 @@ export const NVIDIA_MODEL_CAPABILITIES: ModelCapability[] = [
     supportsVision: false,
     supportsStreaming: true,
     supportsTools: true,
-    bestFor: ['code generation', 'debugging', 'technical analysis'],
-    avoidFor: ['creative writing'],
-    costTier: 'free'
+    bestFor: ["code generation", "debugging", "technical analysis"],
+    avoidFor: ["creative writing"],
+    costTier: "free",
   },
   {
-    model: 'minimaxai/minimax-m2.5',
-    displayName: 'MiniMax M2.5',
-    parameters: 'Unknown',
+    model: "minimaxai/minimax-m2.5",
+    displayName: "MiniMax M2.5",
+    parameters: "Unknown",
     contextWindow: 32768,
     maxTokens: 8192,
     reasoning: 0.85,
@@ -241,21 +241,21 @@ export const NVIDIA_MODEL_CAPABILITIES: ModelCapability[] = [
     analysis: 0.84,
     creativity: 0.88,
     instruction: 0.86,
-    math: 0.80,
+    math: 0.8,
     multilingual: 0.83,
-    speed: 0.78,  // Faster
+    speed: 0.78, // Faster
     supportsThinking: false,
     supportsVision: false,
     supportsStreaming: true,
     supportsTools: true,
-    bestFor: ['quick responses', 'chat', 'moderate complexity'],
-    avoidFor: ['deep reasoning', 'complex coding'],
-    costTier: 'free'
+    bestFor: ["quick responses", "chat", "moderate complexity"],
+    avoidFor: ["deep reasoning", "complex coding"],
+    costTier: "free",
   },
   {
-    model: 'stepfun-ai/step-3.5-flash',
-    displayName: 'Step 3.5 Flash',
-    parameters: 'Unknown',
+    model: "stepfun-ai/step-3.5-flash",
+    displayName: "Step 3.5 Flash",
+    parameters: "Unknown",
     contextWindow: 32768,
     maxTokens: 16384,
     reasoning: 0.88,
@@ -265,25 +265,25 @@ export const NVIDIA_MODEL_CAPABILITIES: ModelCapability[] = [
     instruction: 0.88,
     math: 0.84,
     multilingual: 0.86,
-    speed: 0.85,  // Flash = fast
+    speed: 0.85, // Flash = fast
     supportsThinking: false,
     supportsVision: false,
     supportsStreaming: true,
     supportsTools: true,
-    bestFor: ['fast responses', 'high throughput', 'chat'],
-    avoidFor: ['complex reasoning'],
-    costTier: 'free'
+    bestFor: ["fast responses", "high throughput", "chat"],
+    avoidFor: ["complex reasoning"],
+    costTier: "free",
   },
   {
-    model: 'stockmark/stockmark-2-100b-instruct',
-    displayName: 'Stockmark 2 100B',
-    parameters: '100B',
+    model: "stockmark/stockmark-2-100b-instruct",
+    displayName: "Stockmark 2 100B",
+    parameters: "100B",
     contextWindow: 8192,
     maxTokens: 1024,
     reasoning: 0.83,
     coding: 0.78,
     analysis: 0.85,
-    creativity: 0.80,
+    creativity: 0.8,
     instruction: 0.82,
     math: 0.79,
     multilingual: 0.75,
@@ -292,42 +292,42 @@ export const NVIDIA_MODEL_CAPABILITIES: ModelCapability[] = [
     supportsVision: false,
     supportsStreaming: true,
     supportsTools: false,
-    bestFor: ['general queries', 'simple tasks'],
-    avoidFor: ['complex coding', 'long context'],
-    costTier: 'free'
+    bestFor: ["general queries", "simple tasks"],
+    avoidFor: ["complex coding", "long context"],
+    costTier: "free",
   },
   {
-    model: 'google/gemma-3n-e2b-it',
-    displayName: 'Gemma 3N E2B',
-    parameters: '2B',
+    model: "google/gemma-3n-e2b-it",
+    displayName: "Gemma 3N E2B",
+    parameters: "2B",
     contextWindow: 2048,
     maxTokens: 512,
     reasoning: 0.75,
     coding: 0.72,
     analysis: 0.74,
-    creativity: 0.70,
+    creativity: 0.7,
     instruction: 0.76,
-    math: 0.70,
+    math: 0.7,
     multilingual: 0.72,
-    speed: 0.95,  // Very fast (small model)
+    speed: 0.95, // Very fast (small model)
     supportsThinking: false,
     supportsVision: false,
     supportsStreaming: true,
     supportsTools: false,
-    bestFor: ['ultra-fast responses', 'simple classification', 'edge cases'],
-    avoidFor: ['complex tasks', 'long outputs'],
-    costTier: 'free'
+    bestFor: ["ultra-fast responses", "simple classification", "edge cases"],
+    avoidFor: ["complex tasks", "long outputs"],
+    costTier: "free",
   },
   {
-    model: 'nvidia/nemotron-mini-4b-instruct',
-    displayName: 'Nemotron Mini 4B',
-    parameters: '4B',
+    model: "nvidia/nemotron-mini-4b-instruct",
+    displayName: "Nemotron Mini 4B",
+    parameters: "4B",
     contextWindow: 4096,
     maxTokens: 1024,
     reasoning: 0.72,
     coding: 0.68,
-    analysis: 0.70,
-    creativity: 0.78,  // Color theorist personality
+    analysis: 0.7,
+    creativity: 0.78, // Color theorist personality
     instruction: 0.74,
     math: 0.65,
     multilingual: 0.68,
@@ -336,10 +336,10 @@ export const NVIDIA_MODEL_CAPABILITIES: ModelCapability[] = [
     supportsVision: false,
     supportsStreaming: true,
     supportsTools: false,
-    bestFor: ['personality-based tasks', 'creative descriptions', 'simple chat'],
-    avoidFor: ['technical tasks', 'complex reasoning'],
-    costTier: 'free'
-  }
+    bestFor: ["personality-based tasks", "creative descriptions", "simple chat"],
+    avoidFor: ["technical tasks", "complex reasoning"],
+    costTier: "free",
+  },
 ];
 
 // ============================================================================
@@ -352,9 +352,9 @@ export class NVIDIAProvider {
 
   constructor(config?: Partial<NVIDIAProviderConfig>) {
     this.config = {
-      apiKey: config?.apiKey || process.env.NVIDIA_API_KEY || '',
-      baseUrl: config?.baseUrl || 'https://integrate.api.nvidia.com/v1',
-      defaultModel: config?.defaultModel || 'qwen/qwen3.5-397b-a17b',
+      apiKey: config?.apiKey || process.env.NVIDIA_API_KEY || "",
+      baseUrl: config?.baseUrl || "https://integrate.api.nvidia.com/v1",
+      defaultModel: config?.defaultModel || "qwen/qwen3.5-397b-a17b",
       timeoutMs: config?.timeoutMs || 60000,
       maxRetries: config?.maxRetries || 3,
       enableThinking: config?.enableThinking ?? true,
@@ -379,7 +379,7 @@ export class NVIDIAProvider {
       maxTokens?: number;
       stream?: boolean;
       enableThinking?: boolean;
-    }
+    },
   ): Promise<{
     content: string;
     reasoning?: string;
@@ -412,13 +412,13 @@ export class NVIDIAProvider {
     }
 
     // Adjust for models with different thinking param
-    if (model.includes('kimi')) {
+    if (model.includes("kimi")) {
       payload.chat_template_kwargs = {
         thinking: options?.enableThinking ?? this.config.enableThinking,
       };
     }
 
-    if (model.includes('deepseek')) {
+    if (model.includes("deepseek")) {
       payload.chat_template_kwargs = {
         thinking: options?.enableThinking ?? this.config.enableThinking,
       };
@@ -426,10 +426,10 @@ export class NVIDIAProvider {
 
     try {
       const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${this.config.apiKey}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.config.apiKey}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
@@ -439,12 +439,11 @@ export class NVIDIAProvider {
         throw new Error(`NVIDIA API error: ${response.status} - ${error}`);
       }
 
-      const data = await response.json();
-      
+      const data = (await response.json()) as any;
+
       const choice = data.choices?.[0];
-      const content = choice?.message?.content || '';
-      const reasoning = choice?.message?.reasoning_content || 
-                       choice?.message?.thinking || '';
+      const content = choice?.message?.content || "";
+      const reasoning = choice?.message?.reasoning_content || choice?.message?.thinking || "";
 
       return {
         content,
@@ -452,9 +451,8 @@ export class NVIDIAProvider {
         model: data.model || model,
         usage: data.usage || { prompt: 0, completion: 0, total: 0 },
       };
-
     } catch (error) {
-      console.error('[NVIDIA Provider] Generation failed:', error);
+      console.error("[NVIDIA Provider] Generation failed:", error);
       throw error;
     }
   }
@@ -469,7 +467,7 @@ export class NVIDIAProvider {
       temperature?: number;
       maxTokens?: number;
       enableThinking?: boolean;
-    }
+    },
   ): AsyncGenerator<{
     content?: string;
     reasoning?: string;
@@ -501,24 +499,24 @@ export class NVIDIAProvider {
     }
 
     // Adjust for models with different thinking param
-    if (model.includes('kimi')) {
+    if (model.includes("kimi")) {
       payload.chat_template_kwargs = {
         thinking: options?.enableThinking ?? this.config.enableThinking,
       };
     }
 
-    if (model.includes('deepseek')) {
+    if (model.includes("deepseek")) {
       payload.chat_template_kwargs = {
         thinking: options?.enableThinking ?? this.config.enableThinking,
       };
     }
 
     const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${this.config.apiKey}`,
-        'Content-Type': 'application/json',
-        'Accept': 'text/event-stream',
+        Authorization: `Bearer ${this.config.apiKey}`,
+        "Content-Type": "application/json",
+        Accept: "text/event-stream",
       },
       body: JSON.stringify(payload),
     });
@@ -530,11 +528,11 @@ export class NVIDIAProvider {
 
     const reader = response.body?.getReader();
     if (!reader) {
-      throw new Error('No response body');
+      throw new Error("No response body");
     }
 
     const decoder = new TextDecoder();
-    let buffer = '';
+    let buffer = "";
 
     try {
       while (true) {
@@ -542,13 +540,13 @@ export class NVIDIAProvider {
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
 
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
+          if (line.startsWith("data: ")) {
             const data = line.slice(6);
-            if (data === '[DONE]') {
+            if (data === "[DONE]") {
               yield { done: true };
               return;
             }
@@ -595,22 +593,30 @@ export class NVIDIAProvider {
    * Select best model for task
    */
   selectBestModel(task: {
-    type: 'reasoning' | 'coding' | 'analysis' | 'creativity' | 'instruction' | 'math' | 'multilingual' | 'speed';
-    complexity: 'low' | 'medium' | 'high';
+    type:
+      | "reasoning"
+      | "coding"
+      | "analysis"
+      | "creativity"
+      | "instruction"
+      | "math"
+      | "multilingual"
+      | "speed";
+    complexity: "low" | "medium" | "high";
     contextLength?: number;
     requiresThinking?: boolean;
   }): string {
-    const candidates = NVIDIA_MODEL_CAPABILITIES.filter(m => {
+    const candidates = NVIDIA_MODEL_CAPABILITIES.filter((m) => {
       // Check context window
       if (task.contextLength && m.contextWindow < task.contextLength) {
         return false;
       }
-      
+
       // Check thinking requirement
       if (task.requiresThinking && !m.supportsThinking) {
         return false;
       }
-      
+
       return true;
     });
 
@@ -618,22 +624,22 @@ export class NVIDIAProvider {
     candidates.sort((a, b) => b[task.type] - a[task.type]);
 
     // For high complexity, prefer larger models
-    if (task.complexity === 'high') {
-      const highPerf = candidates.filter(c => c[task.type] > 0.90);
+    if (task.complexity === "high") {
+      const highPerf = candidates.filter((c) => c[task.type] > 0.9);
       if (highPerf.length > 0) {
         return highPerf[0].model;
       }
     }
 
     // For speed, prefer faster models even if slightly less capable
-    if (task.type === 'speed') {
+    if (task.type === "speed") {
       return candidates[0]?.model || this.config.defaultModel;
     }
 
     // Default: best balance of capability and speed for complexity
-    const targetSpeed = task.complexity === 'low' ? 0.80 : 0.60;
-    const balanced = candidates.find(c => c.speed >= targetSpeed);
-    
+    const targetSpeed = task.complexity === "low" ? 0.8 : 0.6;
+    const balanced = candidates.find((c) => c.speed >= targetSpeed);
+
     return balanced?.model || candidates[0]?.model || this.config.defaultModel;
   }
 }
@@ -664,23 +670,28 @@ export class NVIDIAModelRouter {
       preferSpeed?: boolean;
       requireThinking?: boolean;
       maxLatencyMs?: number;
-    }
+    },
   ): Promise<RoutingDecision> {
-    const lastMessage = messages[messages.length - 1]?.content || '';
+    const lastMessage = messages[messages.length - 1]?.content || "";
     const contextLength = messages.reduce((acc, m) => acc + m.content.length, 0);
 
     // Task classification
-    const taskType = this.classifyTask(lastMessage);
     const complexity = this.assessComplexity(lastMessage, contextLength);
 
     // Check for code-related keywords
-    const isCodeTask = /\b(code|programming|function|debug|error|api|database|server)\b/i.test(lastMessage);
-    
+    const isCodeTask = /\b(code|programming|function|debug|error|api|database|server)\b/i.test(
+      lastMessage,
+    );
+
     // Check for reasoning keywords
-    const isReasoningTask = /\b(analyze|explain|why|how|compare|evaluate|solve|proof)\b/i.test(lastMessage);
+    const isReasoningTask = /\b(analyze|explain|why|how|compare|evaluate|solve|proof)\b/i.test(
+      lastMessage,
+    );
 
     // Check for creative keywords
-    const isCreativeTask = /\b(write|create|story|design|imagine|creative|poem|essay)\b/i.test(lastMessage);
+    const isCreativeTask = /\b(write|create|story|design|imagine|creative|poem|essay)\b/i.test(
+      lastMessage,
+    );
 
     // Select model
     let selectedModel: string;
@@ -688,37 +699,37 @@ export class NVIDIAModelRouter {
 
     if (requirements?.preferSpeed) {
       selectedModel = this.provider.selectBestModel({
-        type: 'speed',
-        complexity: 'low',
+        type: "speed",
+        complexity: "low",
         contextLength,
         requiresThinking: requirements?.requireThinking,
       });
-      selectionReason = 'Selected for speed (low latency requirement)';
-    } else if (isCodeTask && complexity === 'high') {
-      selectedModel = 'deepseek-ai/deepseek-v3.2';
-      selectionReason = 'Selected DeepSeek for complex coding task';
+      selectionReason = "Selected for speed (low latency requirement)";
+    } else if (isCodeTask && complexity === "high") {
+      selectedModel = "deepseek-ai/deepseek-v3.2";
+      selectionReason = "Selected DeepSeek for complex coding task";
     } else if (isReasoningTask || (requirements?.requireThinking ?? true)) {
       selectedModel = this.provider.selectBestModel({
-        type: 'reasoning',
+        type: "reasoning",
         complexity,
         contextLength,
         requiresThinking: true,
       });
       selectionReason = `Selected for reasoning task (${complexity} complexity)`;
     } else if (contextLength > 50000) {
-      selectedModel = 'moonshotai/kimi-k2.5';
-      selectionReason = 'Selected Kimi for long context (200K tokens)';
+      selectedModel = "moonshotai/kimi-k2.5";
+      selectionReason = "Selected Kimi for long context (200K tokens)";
     } else if (isCreativeTask) {
       selectedModel = this.provider.selectBestModel({
-        type: 'creativity',
+        type: "creativity",
         complexity,
         contextLength,
       });
-      selectionReason = 'Selected for creative task';
+      selectionReason = "Selected for creative task";
     } else {
       // Balanced choice
       selectedModel = this.provider.selectBestModel({
-        type: 'instruction',
+        type: "instruction",
         complexity,
         contextLength,
       });
@@ -732,34 +743,20 @@ export class NVIDIAModelRouter {
     };
   }
 
-  private classifyTask(content: string): 'reasoning' | 'coding' | 'analysis' | 'creativity' | 'instruction' | 'math' | 'multilingual' | 'speed' {
-    const lower = content.toLowerCase();
-    
-    if (/\b(code|program|debug|function|api|error|bug)\b/.test(lower)) return 'coding';
-    if (/\b(analyze|compare|evaluate|assess|study)\b/.test(lower)) return 'analysis';
-    if (/\b(write|create|story|design|imagine|poem|essay)\b/.test(lower)) return 'creativity';
-    if (/\b(calculate|math|equation|formula|number|solve)\b/.test(lower)) return 'math';
-    if (/\b(translate|chinese|spanish|french|german|japanese|korean)\b/.test(lower)) return 'multilingual';
-    if (/\b(quick|fast|now|immediately|asap)\b/.test(lower)) return 'speed';
-    if (/\b(why|how|explain|reason|proof|logic)\b/.test(lower)) return 'reasoning';
-    
-    return 'instruction';
-  }
-
-  private assessComplexity(content: string, contextLength: number): 'low' | 'medium' | 'high' {
+  private assessComplexity(content: string, contextLength: number): "low" | "medium" | "high" {
     // Simple heuristics
     const wordCount = content.split(/\s+/).length;
     const sentenceCount = content.split(/[.!?]+/).length;
-    
+
     if (contextLength > 10000 || wordCount > 500 || sentenceCount > 30) {
-      return 'high';
+      return "high";
     }
-    
+
     if (contextLength > 2000 || wordCount > 100 || sentenceCount > 10) {
-      return 'medium';
+      return "medium";
     }
-    
-    return 'low';
+
+    return "low";
   }
 }
 

@@ -74,8 +74,7 @@ const eccPlugin: Plugin = {
 
     context.registerCommand("security-scan", {
       description: "Run ECC AgentShield security audit",
-      handler: async (args: CommandHandlerArgs) => {
-        const { path } = args;
+      handler: async () => {
         // Implementation would scan the path
         return { success: true, message: "Security scan completed" };
       },

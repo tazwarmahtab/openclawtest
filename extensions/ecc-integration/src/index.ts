@@ -3,49 +3,49 @@
  * Hybrid AI agent system combining ECC expertise with OpenClaw operations
  */
 
-export { GovernanceEngine, CORE_RULES } from "./governance/engine.js";
-export type { Agent, Task, ECCProfile, GovernanceRule } from "./governance/engine.js";
+export { CORE_RULES, GovernanceEngine } from "./governance/engine.js";
+export type { Agent, ECCProfile, GovernanceRule, Task } from "./governance/engine.js";
 
 export { AgentOrchestrator } from "./agents/orchestrator.js";
 export type { OrchestrationConfig, TaskExecutor } from "./agents/orchestrator.js";
 
 export { SelfImprovementEngine } from "./learning/engine.js";
-export type { Instinct, Skill, LearningConfig, LearningData } from "./learning/engine.js";
+export type { Instinct, LearningConfig, LearningData, Skill } from "./learning/engine.js";
 
-export { SecurityScanner, SkillCreator, BestPracticeEnforcer } from "./ecc/index.js";
-export type { SecurityFinding, PracticeCheckResult } from "./ecc/index.js";
+export { BestPracticeEnforcer, SecurityScanner, SkillCreator } from "./ecc/index.js";
+export type { PracticeCheckResult, SecurityFinding } from "./ecc/index.js";
 
 // Skill Auditor - Mandatory security scanning for skills
-export { SkillAuditor, SafeSkillImporter, SECURITY_PATTERNS } from "./security/skill-auditor.js";
+export { SECURITY_PATTERNS, SafeSkillImporter, SkillAuditor } from "./security/skill-auditor.js";
 export type {
+  SafeImportOptions,
   SkillAuditFinding,
   SkillAuditResult,
   SkillManifest,
-  SafeImportOptions,
 } from "./security/skill-auditor.js";
 
 // Skill Collection Manager - Curated skill imports
 export {
-  SkillCollectionManager,
   CURATED_COLLECTIONS,
   RECOMMENDED_SKILLS,
+  SkillCollectionManager,
 } from "./skills/collection-manager.js";
 export type {
-  SkillCollection,
-  CuratedSkill,
-  SkillImportResult,
   CollectionImportResult,
+  CuratedSkill,
+  SkillCollection,
+  SkillImportResult,
 } from "./skills/collection-manager.js";
 
 // NVIDIA NIM Provider - Free model inference
 export {
-  NVIDIAProvider,
   NVIDIAModelRouter,
+  NVIDIAProvider,
   NVIDIA_MODEL_CAPABILITIES,
 } from "./providers/nvidia-nim.js";
 export type {
-  NVIDIAProviderConfig,
   ModelCapability,
+  NVIDIAProviderConfig,
   NVIDIAResponseChunk,
   RoutingDecision,
 } from "./providers/nvidia-nim.js";
@@ -53,21 +53,21 @@ export type {
 // Model Registry - Capability analysis and routing
 export { ModelRegistry } from "./providers/model-registry.js";
 export type {
-  ModelProfile,
   BenchmarkResult,
-  TaskSpec,
-  RoutingStrategy,
   ModelPerformanceReport,
+  ModelProfile,
+  RoutingStrategy,
+  TaskSpec,
 } from "./providers/model-registry.js";
 
 // Blueprint Manager - Workflow blueprints
 export { BlueprintManager, CURATED_BLUEPRINTS } from "./blueprints/manager.js";
 export type {
   BlueprintDefinition,
-  WorkflowDefinition,
-  WorkflowStage,
   BlueprintExecution,
   StageResult,
+  WorkflowDefinition,
+  WorkflowStage,
 } from "./blueprints/manager.js";
 
 // ============================================================================
@@ -78,23 +78,22 @@ import type { z } from "zod";
 import { AgentOrchestrator, type OrchestrationConfig } from "./agents/orchestrator.js";
 import { BlueprintManager } from "./blueprints/manager.js";
 import {
+  BestPracticeEnforcer,
   SecurityScanner,
   SkillCreator,
-  BestPracticeEnforcer,
-  type SecurityFinding,
   type PracticeCheckResult,
 } from "./ecc/index.js";
-import { GovernanceEngine } from "./governance/engine.js";
 import type { AgentTypeSchema } from "./governance/engine.js";
-import { SelfImprovementEngine, type LearningConfig } from "./learning/engine.js";
+import { GovernanceEngine } from "./governance/engine.js";
 import type { LearningData } from "./learning/engine.js";
+import { SelfImprovementEngine, type LearningConfig } from "./learning/engine.js";
 import { ModelRegistry } from "./providers/model-registry.js";
 import {
-  NVIDIAProvider,
   NVIDIAModelRouter,
+  NVIDIAProvider,
   NVIDIA_MODEL_CAPABILITIES,
 } from "./providers/nvidia-nim.js";
-import { SkillAuditor, SafeSkillImporter } from "./security/skill-auditor.js";
+import { SafeSkillImporter, SkillAuditor } from "./security/skill-auditor.js";
 import { SkillCollectionManager } from "./skills/collection-manager.js";
 
 export interface ECCIntegrationConfig {
@@ -171,12 +170,12 @@ export class ECCIntegration {
 
     // Initialize skill auditor (MANDATORY for security)
     this.skillAuditor = new SkillAuditor({
-      trustedDomains: this.config.skillAuditor.trustedDomains,
+      _trustedDomains: this.config.skillAuditor.trustedDomains,
     });
     this.skillImporter = new SafeSkillImporter(this.skillAuditor);
     this.skillCollections = new SkillCollectionManager({
       auditor: this.skillAuditor,
-      importer: this.skillImporter,
+      _importer: this.skillImporter,
       installPath: "./skills",
     });
 
@@ -318,7 +317,7 @@ export class ECCIntegration {
   async auditSkill(
     skillPath: string,
   ): Promise<import("./security/skill-auditor.js").SkillAuditResult> {
-    return this.skillAuditor.auditSkill(skillPath);
+    return this.skillAuditor._auditSkill(skillPath);
   }
 
   /**
@@ -590,3 +589,15 @@ interface SystemStatus {
 }
 
 export default ECCIntegration;
+
+// Self-Healing System - Autonomous repair and monitoring
+export { SelfHealCommandSchema, SelfHealingEngine } from "./self-healing.js";
+export type { ComponentStatus, SystemHealth } from "./self-healing.js";
+
+// Self-Evolving Workflow System - Continuous learning and adaptation
+export { SelfEvolvingWorkflowEngine } from "./self-evolving.js";
+export type { EvolvingWorkflow, WorkflowMetrics, WorkflowStepTemplate } from "./self-evolving.js";
+
+// Rick Agent Personality
+export { rickAgent } from "./agents/rick/index.js";
+export type { RickPersonality } from "./agents/rick/index.js";

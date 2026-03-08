@@ -17,7 +17,7 @@ import { cp, mkdir, mkdtemp, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, isAbsolute, join, resolve, sep } from "node:path";
 import { promisify } from "node:util";
-import { SkillAuditor, SafeSkillImporter, SkillAuditResult } from "../security/skill-auditor.js";
+import { SafeSkillImporter, SkillAuditor, SkillAuditResult } from "../security/skill-auditor.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -136,7 +136,7 @@ export const RECOMMENDED_SKILLS: CuratedSkill[] = [
 
 export class SkillCollectionManager {
   private auditor: SkillAuditor;
-  private importer: SafeSkillImporter;
+  private _importer: SafeSkillImporter;
   private installedSkills: Map<string, CuratedSkill>;
   private auditCache: Map<string, SkillAuditResult>;
   private installPath: string;
@@ -145,13 +145,13 @@ export class SkillCollectionManager {
 
   constructor(options?: {
     auditor?: SkillAuditor;
-    importer?: SafeSkillImporter;
+    _importer?: SafeSkillImporter;
     installPath?: string;
     fetchImpl?: typeof fetch;
     runGitImpl?: (args: string[], cwd?: string) => Promise<void>;
   }) {
     this.auditor = options?.auditor || new SkillAuditor();
-    this.importer = options?.importer || new SafeSkillImporter(this.auditor);
+    this._importer = options?._importer || new SafeSkillImporter(this.auditor);
     this.installedSkills = new Map();
     this.auditCache = new Map();
     this.installPath = options?.installPath || "./skills";
@@ -203,8 +203,6 @@ export class SkillCollectionManager {
     repositoryUrl: string,
     options: {
       branch?: string;
-      subPath?: string;
-      skipCache?: boolean;
       allowMedium?: boolean;
     } = {},
   ): Promise<SkillImportResult> {
@@ -225,13 +223,14 @@ export class SkillCollectionManager {
 
     // Check cache first
     const cacheKey = `${owner}/${repo}/${path || ""}`;
-    if (!options.skipCache && this.auditCache.has(cacheKey)) {
+    if (this.auditCache.has(cacheKey)) {
       const cached = this.auditCache.get(cacheKey)!;
       console.log(`📋 Using cached audit result`);
       return {
         success: cached.passed,
         skillName: cached.skillName,
         auditResult: cached,
+        installed: false,
       };
     }
 
@@ -243,7 +242,7 @@ export class SkillCollectionManager {
 
       // Step 2: MANDATORY audit (never skip)
       console.log(`🔍 Running security audit...`);
-      const audit = await this.auditor.auditSkill(tempPath);
+      const audit = await this.auditor._auditSkill(tempPath);
       this.auditCache.set(cacheKey, audit);
 
       // Step 3: Check audit results
@@ -266,6 +265,7 @@ export class SkillCollectionManager {
           skillName: audit.skillName,
           error: `Security audit failed: ${audit.criticalCount} critical, ${audit.highCount} high severity issues`,
           auditResult: audit,
+          installed: false,
         };
       }
 
@@ -287,6 +287,7 @@ export class SkillCollectionManager {
           skillName: audit.skillName,
           error: `${audit.mediumCount} medium severity findings. Use --allow-medium to proceed.`,
           auditResult: audit,
+          installed: false,
         };
       }
 
@@ -294,9 +295,10 @@ export class SkillCollectionManager {
       console.log(`\n✅ Security audit PASSED`);
       console.log(`   Installing to: ${this.installPath}/${audit.skillName}`);
 
+      await this._importer.importSkill(tempPath, { allowMedium: options.allowMedium });
       const installResult = await this.installSkill(tempPath, audit.skillName);
 
-      // Update tracking
+      // Step 5: Track installation
       const curatedSkill: CuratedSkill = {
         name: audit.skillName,
         description: `Imported from ${owner}/${repo}`,
@@ -315,8 +317,8 @@ export class SkillCollectionManager {
         success: true,
         skillName: audit.skillName,
         installed: true,
-        installPath: installResult.path,
         auditResult: audit,
+        installPath: installResult.path,
       };
     } catch (error) {
       console.error(
@@ -327,6 +329,7 @@ export class SkillCollectionManager {
         skillName: "unknown",
         error: error instanceof Error ? error.message : "Unknown error",
         auditResult: null,
+        installed: false,
       };
     }
   }
@@ -496,7 +499,7 @@ export class SkillCollectionManager {
 
     // Re-audit the skill
     const skillPath = `${this.installPath}/${skillName}`;
-    const audit = await this.auditor.auditSkill(skillPath);
+    const audit = await this.auditor._auditSkill(skillPath);
 
     // Update tracking
     skill.lastAudit = new Date();
@@ -901,5 +904,5 @@ export function createCollectionCommands(manager: SkillCollectionManager) {
 // Export
 // ============================================================================
 
-export { SkillAuditor, SafeSkillImporter };
+export { SafeSkillImporter, SkillAuditor };
 export default SkillCollectionManager;

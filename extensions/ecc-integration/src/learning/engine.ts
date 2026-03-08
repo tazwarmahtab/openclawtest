@@ -4,14 +4,14 @@
  * Based on ECC's Continuous Learning v2 system
  */
 
-import { Agent, Task } from '../governance/engine.js';
+import { Task } from "../governance/engine.js";
 
 export interface Instinct {
   id: string;
   pattern: string;
   confidence: number;
   context: Record<string, unknown>;
-  source: 'task-completion' | 'pattern-extraction' | 'skill-evolution';
+  source: "task-completion" | "pattern-extraction" | "skill-evolution";
   createdAt: Date;
   lastUsed: Date;
   usageCount: number;
@@ -45,7 +45,7 @@ export class SelfImprovementEngine {
       maxInstinctsPerAgent: 100,
       skillEvolutionIntervalMs: 3600000, // 1 hour
       patternRecognitionEnabled: true,
-      ...config
+      ...config,
     };
 
     if (this.config.patternRecognitionEnabled) {
@@ -62,7 +62,7 @@ export class SelfImprovementEngine {
     }
 
     const agentInstincts = this.instincts.get(agentId)!;
-    
+
     // Extract pattern from task
     const pattern = this.extractPattern(task, result);
     const confidence = this.calculateConfidence(task, result);
@@ -74,19 +74,20 @@ export class SelfImprovementEngine {
         confidence,
         context: {
           taskType: task.title,
-          success: task.status === 'complete',
-          duration: task.completedAt && task.startedAt 
-            ? task.completedAt.getTime() - task.startedAt.getTime()
-            : null
+          success: task.status === "complete",
+          duration:
+            task.completedAt && task.startedAt
+              ? task.completedAt.getTime() - task.startedAt.getTime()
+              : null,
         },
-        source: 'task-completion',
+        source: "task-completion",
         createdAt: new Date(),
         lastUsed: new Date(),
-        usageCount: 1
+        usageCount: 1,
       };
 
       agentInstincts.push(instinct);
-      
+
       // Prune old instincts if limit exceeded
       if (agentInstincts.length > this.config.maxInstinctsPerAgent) {
         this.pruneInstincts(agentId);
@@ -102,17 +103,17 @@ export class SelfImprovementEngine {
   private extractPattern(task: Task, result: unknown): string {
     // Pattern extraction logic
     const taskType = task.title.toLowerCase();
-    
-    if (taskType.includes('code') || taskType.includes('implement')) {
-      return `Code task "${task.title}" completed ${task.status === 'complete' ? 'successfully' : 'with issues'}`;
+
+    if (taskType.includes("code") || taskType.includes("implement")) {
+      return `Code task "${task.title}" completed ${task.status === "complete" ? "successfully" : "with issues"}`;
     }
-    
-    if (taskType.includes('review') || taskType.includes('analyze')) {
+
+    if (taskType.includes("review") || taskType.includes("analyze")) {
       return `Review task "${task.title}" identified ${this.extractFindings(result)} issues`;
     }
-    
-    if (taskType.includes('security') || taskType.includes('scan')) {
-      return `Security scan "${task.title}" ${task.status === 'complete' ? 'passed' : 'failed'}`;
+
+    if (taskType.includes("security") || taskType.includes("scan")) {
+      return `Security scan "${task.title}" ${task.status === "complete" ? "passed" : "failed"}`;
     }
 
     return `Task "${task.title}" pattern: ${task.status}`;
@@ -122,11 +123,11 @@ export class SelfImprovementEngine {
    * Extract findings from result
    */
   private extractFindings(result: unknown): number {
-    if (typeof result === 'object' && result !== null) {
-      if ('findings' in result && Array.isArray(result.findings)) {
+    if (typeof result === "object" && result !== null) {
+      if ("findings" in result && Array.isArray(result.findings)) {
         return result.findings.length;
       }
-      if ('violations' in result && Array.isArray(result.violations)) {
+      if ("violations" in result && Array.isArray(result.violations)) {
         return result.violations.length;
       }
     }
@@ -140,21 +141,22 @@ export class SelfImprovementEngine {
     let confidence = 0.5;
 
     // Success boosts confidence
-    if (task.status === 'complete') {
+    if (task.status === "complete") {
       confidence += 0.3;
     }
 
     // Fast completion indicates well-understood pattern
     if (task.startedAt && task.completedAt) {
       const duration = task.completedAt.getTime() - task.startedAt.getTime();
-      if (duration < 60000) { // Under 1 minute
+      if (duration < 60000) {
+        // Under 1 minute
         confidence += 0.1;
       }
     }
 
     // Result quality affects confidence
-    if (typeof result === 'object' && result !== null) {
-      if ('quality' in result && typeof result.quality === 'number') {
+    if (typeof result === "object" && result !== null) {
+      if ("quality" in result && typeof result.quality === "number") {
         confidence += result.quality * 0.1;
       }
     }
@@ -179,9 +181,9 @@ export class SelfImprovementEngine {
     // Keep top instincts
     const kept = agentInstincts.slice(0, this.config.maxInstinctsPerAgent);
     const removed = agentInstincts.length - kept.length;
-    
+
     this.instincts.set(agentId, kept);
-    
+
     if (removed > 0) {
       console.log(`[Learning] Pruned ${removed} old instincts for ${agentId}`);
     }
@@ -195,7 +197,7 @@ export class SelfImprovementEngine {
       this.evolveSkills();
     }, this.config.skillEvolutionIntervalMs);
 
-    console.log('[Learning] Skill evolution started');
+    console.log("[Learning] Skill evolution started");
   }
 
   /**
@@ -207,17 +209,18 @@ export class SelfImprovementEngine {
       const clusters = this.clusterInstincts(agentInstincts);
 
       for (const cluster of clusters) {
-        if (cluster.length >= 3) { // Minimum cluster size
+        if (cluster.length >= 3) {
+          // Minimum cluster size
           const skill = this.createSkillFromCluster(cluster);
-          
+
           if (!this.skills.has(agentId)) {
             this.skills.set(agentId, []);
           }
 
           const agentSkills = this.skills.get(agentId)!;
-          
+
           // Check if similar skill already exists
-          const exists = agentSkills.some(s => s.name === skill.name);
+          const exists = agentSkills.some((s) => s.name === skill.name);
           if (!exists) {
             agentSkills.push(skill);
             console.log(`[Learning] Evolved new skill for ${agentId}: ${skill.name}`);
@@ -243,7 +246,7 @@ export class SelfImprovementEngine {
       // Find similar instincts
       for (const other of instincts) {
         if (processed.has(other.id)) continue;
-        
+
         if (this.areInstinctsSimilar(instinct, other)) {
           cluster.push(other);
           processed.add(other.id);
@@ -265,11 +268,11 @@ export class SelfImprovementEngine {
     const patternB = b.pattern.toLowerCase();
 
     // Extract keywords
-    const keywordsA = patternA.split(/\s+/).filter(w => w.length > 3);
-    const keywordsB = patternB.split(/\s+/).filter(w => w.length > 3);
+    const keywordsA = patternA.split(/\s+/).filter((w) => w.length > 3);
+    const keywordsB = patternB.split(/\s+/).filter((w) => w.length > 3);
 
     // Check for common keywords
-    const common = keywordsA.filter(k => keywordsB.includes(k));
+    const common = keywordsA.filter((k) => keywordsB.includes(k));
     const similarity = common.length / Math.max(keywordsA.length, keywordsB.length);
 
     return similarity > 0.5; // 50% similarity threshold
@@ -279,12 +282,12 @@ export class SelfImprovementEngine {
    * Create a skill from a cluster of instincts
    */
   private createSkillFromCluster(cluster: Instinct[]): Skill {
-    const patterns = cluster.map(i => i.pattern);
+    const patterns = cluster.map((i) => i.pattern);
     const commonWords = this.extractCommonWords(patterns);
-    
-    const name = commonWords.slice(0, 3).join('-') || 'evolved-skill';
-    
-    const successfulInstincts = cluster.filter(i => i.context.success === true);
+
+    const name = commonWords.slice(0, 3).join("-") || "evolved-skill";
+
+    const successfulInstincts = cluster.filter((i) => i.context.success === true);
     const successRate = successfulInstincts.length / cluster.length;
 
     return {
@@ -292,9 +295,9 @@ export class SelfImprovementEngine {
       name,
       description: `Auto-evolved skill from ${cluster.length} related patterns`,
       category: this.categorizeSkill(name),
-      relatedInstincts: cluster.map(i => i.id),
+      relatedInstincts: cluster.map((i) => i.id),
       successRate,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
   }
 
@@ -305,9 +308,12 @@ export class SelfImprovementEngine {
     if (patterns.length === 0) return [];
 
     const wordFreq: Map<string, number> = new Map();
-    
+
     for (const pattern of patterns) {
-      const words = pattern.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+      const words = pattern
+        .toLowerCase()
+        .split(/\s+/)
+        .filter((w) => w.length > 3);
       for (const word of words) {
         wordFreq.set(word, (wordFreq.get(word) || 0) + 1);
       }
@@ -316,7 +322,7 @@ export class SelfImprovementEngine {
     // Sort by frequency
     const sorted = Array.from(wordFreq.entries())
       .sort((a, b) => b[1] - a[1])
-      .filter(([word, count]) => count >= patterns.length * 0.5) // Appear in 50% of patterns
+      .filter(([_word, count]) => count >= patterns.length * 0.5) // Appear in 50% of patterns
       .map(([word]) => word);
 
     return sorted;
@@ -327,21 +333,21 @@ export class SelfImprovementEngine {
    */
   private categorizeSkill(name: string): string {
     const lower = name.toLowerCase();
-    
-    if (lower.includes('code') || lower.includes('implement')) {
-      return 'development';
+
+    if (lower.includes("code") || lower.includes("implement")) {
+      return "development";
     }
-    if (lower.includes('review') || lower.includes('analyze')) {
-      return 'analysis';
+    if (lower.includes("review") || lower.includes("analyze")) {
+      return "analysis";
     }
-    if (lower.includes('security') || lower.includes('scan')) {
-      return 'security';
+    if (lower.includes("security") || lower.includes("scan")) {
+      return "security";
     }
-    if (lower.includes('test') || lower.includes('debug')) {
-      return 'testing';
+    if (lower.includes("test") || lower.includes("debug")) {
+      return "testing";
     }
-    
-    return 'general';
+
+    return "general";
   }
 
   /**
@@ -368,8 +374,8 @@ export class SelfImprovementEngine {
       summary: {
         totalInstincts: 0,
         totalSkills: 0,
-        avgConfidence: 0
-      }
+        avgConfidence: 0,
+      },
     };
 
     let totalConfidence = 0;
@@ -378,7 +384,7 @@ export class SelfImprovementEngine {
     for (const [agentId, agentInstincts] of this.instincts) {
       data.instincts[agentId] = agentInstincts;
       data.summary.totalInstincts += agentInstincts.length;
-      
+
       for (const instinct of agentInstincts) {
         totalConfidence += instinct.confidence;
         confidenceCount++;
@@ -390,9 +396,7 @@ export class SelfImprovementEngine {
       data.summary.totalSkills += agentSkills.length;
     }
 
-    data.summary.avgConfidence = confidenceCount > 0 
-      ? totalConfidence / confidenceCount 
-      : 0;
+    data.summary.avgConfidence = confidenceCount > 0 ? totalConfidence / confidenceCount : 0;
 
     return data;
   }
@@ -409,7 +413,9 @@ export class SelfImprovementEngine {
       this.skills.set(agentId, agentSkills);
     }
 
-    console.log(`[Learning] Imported data: ${data.summary.totalInstincts} instincts, ${data.summary.totalSkills} skills`);
+    console.log(
+      `[Learning] Imported data: ${data.summary.totalInstincts} instincts, ${data.summary.totalSkills} skills`,
+    );
   }
 }
 

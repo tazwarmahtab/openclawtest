@@ -4,8 +4,8 @@
  * Enforces: One Agent / One Task rule
  */
 
-import { GovernanceEngine, Agent, Task, AgentTypeSchema } from '../governance/engine.js';
-import type { z } from 'zod';
+import type { z } from "zod";
+import { Agent, AgentTypeSchema, GovernanceEngine, Task } from "../governance/engine.js";
 
 export interface OrchestrationConfig {
   maxAgentsPerType: number;
@@ -21,17 +21,14 @@ export class AgentOrchestrator {
   private taskQueue: Task[] = [];
   private executionCallbacks: Map<string, TaskExecutor> = new Map();
 
-  constructor(
-    governance: GovernanceEngine,
-    config: Partial<OrchestrationConfig> = {}
-  ) {
+  constructor(governance: GovernanceEngine, config: Partial<OrchestrationConfig> = {}) {
     this.governance = governance;
     this.config = {
       maxAgentsPerType: 3,
       taskTimeoutMs: 300000, // 5 minutes
       autoScaling: true,
       healthCheckIntervalMs: 30000,
-      ...config
+      ...config,
     };
 
     this.initializePools();
@@ -77,8 +74,8 @@ export class AgentOrchestrator {
   async submitTask(
     title: string,
     description: string,
-    priority: Task['priority'] = 'medium',
-    preferredAgentType?: z.infer<typeof AgentTypeSchema>
+    priority: Task["priority"] = "medium",
+    preferredAgentType?: z.infer<typeof AgentTypeSchema>,
   ): Promise<string> {
     const task: Task = {
       id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -86,14 +83,14 @@ export class AgentOrchestrator {
       description,
       agentId: null,
       priority,
-      status: 'idle',
+      status: "idle",
       createdAt: new Date(),
       startedAt: null,
       completedAt: null,
       metadata: {
         preferredAgentType,
-        submitTime: Date.now()
-      }
+        submitTime: Date.now(),
+      },
     };
 
     this.taskQueue.push(task);
@@ -115,14 +112,16 @@ export class AgentOrchestrator {
     this.taskQueue.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
 
     for (const task of this.taskQueue) {
-      if (task.status !== 'idle') continue;
+      if (task.status !== "idle") continue;
 
-      const agentType = task.metadata.preferredAgentType as z.infer<typeof AgentTypeSchema> | undefined;
+      const agentType = task.metadata.preferredAgentType as
+        | z.infer<typeof AgentTypeSchema>
+        | undefined;
       const availableAgent = await this.findAvailableAgent(agentType);
 
       if (availableAgent) {
         const result = this.governance.assignTask(availableAgent.id, task);
-        
+
         if (result.success) {
           console.log(`[Orchestrator] Assigned task ${task.id} to agent ${availableAgent.id}`);
           this.executeTask(task, availableAgent);
@@ -133,8 +132,8 @@ export class AgentOrchestrator {
     }
 
     // Clean up completed/failed tasks from queue
-    this.taskQueue = this.taskQueue.filter(t => 
-      t.status === 'idle' || t.status === 'assigned' || t.status === 'working'
+    this.taskQueue = this.taskQueue.filter(
+      (t) => t.status === "idle" || t.status === "assigned" || t.status === "working",
     );
   }
 
@@ -142,20 +141,20 @@ export class AgentOrchestrator {
    * Find an available agent for task assignment
    */
   private async findAvailableAgent(
-    preferredType?: z.infer<typeof AgentTypeSchema>
+    preferredType?: z.infer<typeof AgentTypeSchema>,
   ): Promise<Agent | null> {
     // Try preferred type first
     if (preferredType) {
       const pool = this.agentPools.get(preferredType);
       if (pool) {
-        const available = pool.find(a => a.state === 'idle');
+        const available = pool.find((a) => a.state === "idle");
         if (available) return available;
       }
     }
 
     // Try any available agent
-    for (const [type, pool] of this.agentPools) {
-      const available = pool.find(a => a.state === 'idle');
+    for (const [_type, pool] of this.agentPools) {
+      const available = pool.find((a) => a.state === "idle");
       if (available) return available;
     }
 
@@ -178,37 +177,37 @@ export class AgentOrchestrator {
    * Execute a task with an agent
    */
   private async executeTask(task: Task, agent: Agent): Promise<void> {
-    agent.state = 'working';
-    task.status = 'working';
+    agent.state = "working";
+    task.status = "working";
 
     const executor = this.executionCallbacks.get(agent.type);
     if (!executor) {
       console.warn(`[Orchestrator] No executor registered for agent type: ${agent.type}`);
-      this.completeTask(task, agent, 'failed', 'No executor registered');
+      this.completeTask(task, agent, "failed", "No executor registered");
       return;
     }
 
     // Set timeout
     const timeoutId = setTimeout(() => {
-      if (task.status === 'working') {
-        this.completeTask(task, agent, 'failed', 'Task timeout');
+      if (task.status === "working") {
+        this.completeTask(task, agent, "failed", "Task timeout");
       }
     }, this.config.taskTimeoutMs);
 
     try {
       console.log(`[Orchestrator] Executing task ${task.id} with ${agent.type} agent ${agent.id}`);
-      
+
       // Execute with ECC skills
       const result = await executor(task, agent, {
         skills: agent.eccProfile.skills,
-        securityLevel: agent.eccProfile.securityLevel
+        securityLevel: agent.eccProfile.securityLevel,
       });
 
       clearTimeout(timeoutId);
-      this.completeTask(task, agent, 'complete', result);
+      this.completeTask(task, agent, "complete", result);
     } catch (error) {
       clearTimeout(timeoutId);
-      this.completeTask(task, agent, 'failed', String(error));
+      this.completeTask(task, agent, "failed", String(error));
     }
   }
 
@@ -218,18 +217,20 @@ export class AgentOrchestrator {
   private completeTask(
     task: Task,
     agent: Agent,
-    status: 'complete' | 'failed',
-    result: unknown
+    status: "complete" | "failed",
+    result: unknown,
   ): void {
     task.status = status;
     task.completedAt = new Date();
-    agent.state = 'idle';
+    agent.state = "idle";
     agent.currentTask = null;
     agent.history.push(task);
     agent.lastActive = new Date();
 
-    console.log(`[Orchestrator] Task ${task.id} ${status}:`, 
-      typeof result === 'string' ? result : 'completed successfully');
+    console.log(
+      `[Orchestrator] Task ${task.id} ${status}:`,
+      typeof result === "string" ? result : "completed successfully",
+    );
 
     // Trigger learning update if enabled
     if (agent.eccProfile.learningEnabled) {
@@ -243,13 +244,13 @@ export class AgentOrchestrator {
   /**
    * Update agent instincts based on task completion
    */
-  private updateAgentInstincts(agent: Agent, task: Task, result: unknown): void {
+  private updateAgentInstincts(agent: Agent, task: Task, _result: unknown): void {
     // Extract patterns from task execution
     const instinct = {
       pattern: `Task ${task.title} completed with ${task.status}`,
-      confidence: task.status === 'complete' ? 0.9 : 0.3,
+      confidence: task.status === "complete" ? 0.9 : 0.3,
       context: task.metadata,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     agent.eccProfile.instincts.push(JSON.stringify(instinct));
@@ -261,17 +262,17 @@ export class AgentOrchestrator {
    */
   private performHealthCheck(): void {
     const now = Date.now();
-    for (const [type, pool] of this.agentPools) {
+    for (const [_type, pool] of this.agentPools) {
       for (const agent of pool) {
         const idle = now - agent.lastActive.getTime();
-        
-        if (agent.state === 'working' && idle > this.config.taskTimeoutMs) {
+
+        if (agent.state === "working" && idle > this.config.taskTimeoutMs) {
           console.warn(`[Orchestrator] Agent ${agent.id} appears stuck, resetting`);
           if (agent.currentTask) {
-            agent.currentTask.status = 'failed';
+            agent.currentTask.status = "failed";
             agent.currentTask.completedAt = new Date();
           }
-          agent.state = 'idle';
+          agent.state = "idle";
           agent.currentTask = null;
         }
       }
@@ -281,10 +282,7 @@ export class AgentOrchestrator {
   /**
    * Register a task executor for an agent type
    */
-  registerExecutor(
-    agentType: z.infer<typeof AgentTypeSchema>,
-    executor: TaskExecutor
-  ): void {
+  registerExecutor(agentType: z.infer<typeof AgentTypeSchema>, executor: TaskExecutor): void {
     this.executionCallbacks.set(agentType, executor);
     console.log(`[Orchestrator] Registered executor for ${agentType}`);
   }
@@ -297,16 +295,16 @@ export class AgentOrchestrator {
       agents: {},
       queue: {
         total: this.taskQueue.length,
-        byStatus: { idle: 0, assigned: 0, working: 0, complete: 0, failed: 0, blocked: 0 }
-      }
+        byStatus: { idle: 0, assigned: 0, working: 0, complete: 0, failed: 0, blocked: 0 },
+      },
     };
 
     for (const [type, pool] of this.agentPools) {
       status.agents[type] = {
         total: pool.length,
-        idle: pool.filter(a => a.state === 'idle').length,
-        working: pool.filter(a => a.state === 'working').length,
-        assigned: pool.filter(a => a.state === 'assigned').length
+        idle: pool.filter((a) => a.state === "idle").length,
+        working: pool.filter((a) => a.state === "working").length,
+        assigned: pool.filter((a) => a.state === "assigned").length,
       };
     }
 
@@ -322,16 +320,19 @@ export class AgentOrchestrator {
 export type TaskExecutor = (
   task: Task,
   agent: Agent,
-  context: { skills: string[]; securityLevel: string }
+  context: { skills: string[]; securityLevel: string },
 ) => Promise<unknown>;
 
 interface OrchestrationStatus {
-  agents: Record<string, {
-    total: number;
-    idle: number;
-    working: number;
-    assigned: number;
-  }>;
+  agents: Record<
+    string,
+    {
+      total: number;
+      idle: number;
+      working: number;
+      assigned: number;
+    }
+  >;
   queue: {
     total: number;
     byStatus: Record<string, number>;

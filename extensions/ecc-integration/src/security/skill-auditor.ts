@@ -4,14 +4,14 @@
  * Mandatory security scanner for OpenClaw skills.
  * Analyzes skills for malicious code, unsafe commands, and security vulnerabilities.
  *
- * Security Context: Part of comprehensive audit suite
- * - skill-auditor (this): Scans skills for malicious code
- * - auth-auditor: Code security patterns
- * - audit-code: Secrets/SQL injection detection
- * - permission-auditor: Environment/config permissions
+ * Security Context: Part of comprehensive _audit suite
+ * - skill-_auditor (this): Scans skills for malicious code
+ * - auth-_auditor: Code security patterns
+ * - _audit-code: Secrets/SQL injection detection
+ * - permission-_auditor: Environment/config permissions
  *
  * Stats: ~7.1% of online skills may contain malicious software
- * This auditor prevents unsafe skill installation.
+ * This _auditor prevents unsafe skill installation.
  */
 
 import { z } from "zod";
@@ -63,7 +63,7 @@ export interface SkillAuditFinding {
 
 export interface SkillAuditResult {
   skillName: string;
-  skillPath: string;
+  _skillPath: string;
   passed: boolean;
   findings: SkillAuditFinding[];
   criticalCount: number;
@@ -72,7 +72,7 @@ export interface SkillAuditResult {
   lowCount: number;
   infoCount: number;
   scanDurationMs: number;
-  auditLog: string[];
+  _auditLog: string[];
 }
 
 export interface SkillManifest {
@@ -126,7 +126,7 @@ const SECURITY_PATTERNS: SecurityPattern[] = [
       /^data:text\/javascript/i,
     ],
     filePatterns: [
-      /\.min\.js$/, // Minified code harder to audit
+      /\.min\.js$/, // Minified code harder to _audit
       /\.packed\.js$/,
     ],
   },
@@ -156,7 +156,7 @@ const SECURITY_PATTERNS: SecurityPattern[] = [
     severity: "critical",
     title: "Potential Backdoor Code",
     description: "Code contains patterns associated with remote access backdoors",
-    remediation: "Immediately quarantine skill and audit system",
+    remediation: "Immediately quarantine skill and _audit system",
     codePatterns: [
       /net\s*\.\s*createServer\s*\(/i, // Network server creation
       /require\s*\(\s*['"`]socket\.io['"`]\s*\)/i,
@@ -216,7 +216,7 @@ const SECURITY_PATTERNS: SecurityPattern[] = [
     category: "obfuscated_code",
     severity: "high",
     title: "Obfuscated or Encoded Code",
-    description: "Code appears obfuscated, making security auditing difficult",
+    description: "Code appears obfuscated, making security _auditing difficult",
     remediation: "Require unobfuscated source code. Reject minified/packed code.",
     codePatterns: [
       /\\x[0-9a-f]{2}/i, // Hex escaping
@@ -366,13 +366,13 @@ const SECURITY_PATTERNS: SecurityPattern[] = [
 
 export class SkillAuditor {
   private patterns: SecurityPattern[];
-  private trustedDomains: Set<string>;
-  private auditLog: string[];
+  private _trustedDomains: Set<string>;
+  private _auditLog: string[];
 
-  constructor(options?: { patterns?: SecurityPattern[]; trustedDomains?: string[] }) {
-    this.patterns = options?.patterns || SECURITY_PATTERNS;
-    this.trustedDomains = new Set(
-      options?.trustedDomains || [
+  constructor(_options?: { patterns?: SecurityPattern[]; _trustedDomains?: string[] }) {
+    this.patterns = _options?.patterns || SECURITY_PATTERNS;
+    this._trustedDomains = new Set(
+      _options?._trustedDomains || [
         "github.com",
         "gitlab.com",
         "bitbucket.org",
@@ -382,39 +382,46 @@ export class SkillAuditor {
         "raw.githubusercontent.com",
       ],
     );
-    this.auditLog = [];
+    this._auditLog = [];
+  }
+
+  isTrustedUrl(url: string): boolean {
+    for (const domain of this._trustedDomains) {
+      if (url.includes(domain)) return true;
+    }
+    return false;
   }
 
   /**
-   * Perform complete skill audit
+   * Perform complete skill _audit
    * This is the MANDATORY gate before any skill installation
    */
-  async auditSkill(skillPath: string): Promise<SkillAuditResult> {
+  async _auditSkill(_skillPath: string): Promise<SkillAuditResult> {
     const startTime = Date.now();
-    this.auditLog = [`Starting audit of skill: ${skillPath}`];
+    this._auditLog = [`Starting _audit of skill: ${_skillPath}`];
 
     const findings: SkillAuditFinding[] = [];
     let manifest: SkillManifest | null = null;
 
     try {
       // Step 1: Read and validate manifest
-      manifest = await this.readManifest(skillPath);
+      manifest = await this.readManifest(_skillPath);
       this.log("Manifest loaded successfully");
 
       // Step 2: Check dependencies
-      const depFindings = await this.auditDependencies(manifest);
+      const depFindings = await this._auditDependencies(manifest);
       findings.push(...depFindings);
 
       // Step 3: Scan all source files
-      const sourceFindings = await this.scanSourceFiles(skillPath);
+      const sourceFindings = await this.scanSourceFiles(_skillPath);
       findings.push(...sourceFindings);
 
       // Step 4: Check install scripts
-      const installFindings = await this.checkInstallScripts(skillPath);
+      const installFindings = await this.checkInstallScripts(_skillPath);
       findings.push(...installFindings);
 
       // Step 5: Analyze dataflow patterns
-      const dataflowFindings = await this.analyzeDataflow(skillPath);
+      const dataflowFindings = await this.analyzeDataflow(_skillPath);
       findings.push(...dataflowFindings);
     } catch (error) {
       this.log(`Audit error: ${error instanceof Error ? error.message : "Unknown error"}`);
@@ -423,12 +430,12 @@ export class SkillAuditor {
         severity: "high",
         category: "malicious_code",
         title: "Audit Failed",
-        description: `Could not complete audit: ${error instanceof Error ? error.message : "Unknown error"}`,
-        file: skillPath,
+        description: `Could not complete _audit: ${error instanceof Error ? error.message : "Unknown error"}`,
+        file: _skillPath,
         line: 0,
         column: 0,
         code: "",
-        remediation: "Verify skill structure and retry audit",
+        remediation: "Verify skill structure and retry _audit",
         confidence: 1.0,
       });
     }
@@ -451,7 +458,7 @@ export class SkillAuditor {
 
     return {
       skillName: manifest?.name || "unknown",
-      skillPath,
+      _skillPath,
       passed,
       findings,
       criticalCount,
@@ -460,13 +467,13 @@ export class SkillAuditor {
       lowCount,
       infoCount,
       scanDurationMs: duration,
-      auditLog: this.auditLog,
+      _auditLog: this._auditLog,
     };
   }
 
   /**
    * Quick check for obvious malicious patterns
-   * Use this for rapid screening before full audit
+   * Use this for rapid screening before full _audit
    */
   async quickScreen(code: string, filename: string): Promise<SkillAuditFinding[]> {
     const findings: SkillAuditFinding[] = [];
@@ -508,7 +515,7 @@ export class SkillAuditor {
   /**
    * Read and validate skill manifest
    */
-  private async readManifest(skillPath: string): Promise<SkillManifest> {
+  private async readManifest(_skillPath: string): Promise<SkillManifest> {
     // This would read package.json or skill.json
     // For now, return a placeholder
     return {
@@ -521,7 +528,7 @@ export class SkillAuditor {
   /**
    * Audit dependencies for known risks
    */
-  private async auditDependencies(manifest: SkillManifest): Promise<SkillAuditFinding[]> {
+  private async _auditDependencies(manifest: SkillManifest): Promise<SkillAuditFinding[]> {
     const findings: SkillAuditFinding[] = [];
 
     if (!manifest.dependencies) {
@@ -575,7 +582,7 @@ export class SkillAuditor {
   /**
    * Scan all source files for security patterns
    */
-  private async scanSourceFiles(skillPath: string): Promise<SkillAuditFinding[]> {
+  private async scanSourceFiles(_skillPath: string): Promise<SkillAuditFinding[]> {
     // This would walk the directory and scan all JS/TS files
     // Placeholder implementation
     return [];
@@ -584,7 +591,7 @@ export class SkillAuditor {
   /**
    * Check npm install scripts for malicious code
    */
-  private async checkInstallScripts(skillPath: string): Promise<SkillAuditFinding[]> {
+  private async checkInstallScripts(_skillPath: string): Promise<SkillAuditFinding[]> {
     // Check preinstall, postinstall, install scripts in package.json
     return [];
   }
@@ -592,7 +599,7 @@ export class SkillAuditor {
   /**
    * Perform AST-based dataflow analysis
    */
-  private async analyzeDataflow(skillPath: string): Promise<SkillAuditFinding[]> {
+  private async analyzeDataflow(_skillPath: string): Promise<SkillAuditFinding[]> {
     // This would use a parser like @babel/parser or acorn
     // to build AST and analyze dataflow for:
     // - Taint tracking (user input -> dangerous sink)
@@ -662,7 +669,7 @@ export class SkillAuditor {
 
   private log(message: string): void {
     const timestamp = new Date().toISOString();
-    this.auditLog.push(`[${timestamp}] ${message}`);
+    this._auditLog.push(`[${timestamp}] ${message}`);
   }
 }
 
@@ -679,61 +686,64 @@ export interface SafeImportOptions {
 }
 
 export class SafeSkillImporter {
-  private auditor: SkillAuditor;
+  private _auditor: SkillAuditor;
   private installedSkills: Map<string, SkillAuditResult>;
 
-  constructor(auditor?: SkillAuditor) {
-    this.auditor = auditor || new SkillAuditor();
+  constructor(_auditor?: SkillAuditor) {
+    this._auditor = _auditor || new SkillAuditor();
     this.installedSkills = new Map();
   }
 
   /**
-   * Import skill with mandatory security audit
+   * Import skill with mandatory security _audit
    * This is the ONLY safe way to install skills
    */
-  async importSkill(skillPath: string, options: SafeImportOptions = {}): Promise<SkillAuditResult> {
-    console.log(`🔍 Auditing skill: ${skillPath}`);
+  async importSkill(
+    _skillPath: string,
+    _options: SafeImportOptions = {},
+  ): Promise<SkillAuditResult> {
+    console.log(`🔍 Auditing skill: ${_skillPath}`);
 
-    // ALWAYS audit unless explicitly skipped (trusted internal only)
-    if (!options.skipAudit) {
-      const audit = await this.auditor.auditSkill(skillPath);
+    // ALWAYS _audit unless explicitly skipped (trusted internal only)
+    if (!_options.skipAudit) {
+      const _audit = await this._auditor._auditSkill(_skillPath);
 
-      if (!audit.passed) {
-        console.error(`❌ Skill audit FAILED`);
-        console.error(`   Critical: ${audit.criticalCount}`);
-        console.error(`   High: ${audit.highCount}`);
+      if (!_audit.passed) {
+        console.error(`❌ Skill _audit FAILED`);
+        console.error(`   Critical: ${_audit.criticalCount}`);
+        console.error(`   High: ${_audit.highCount}`);
         console.error(`   Blocking installation for security`);
 
         // Quarantine if suspicious
-        if (audit.criticalCount > 0 && options.quarantinePath) {
-          await this.quarantineSkill(skillPath, options.quarantinePath, audit);
+        if (_audit.criticalCount > 0 && _options.quarantinePath) {
+          await this.quarantineSkill(_skillPath, _options.quarantinePath, _audit);
         }
 
-        return audit;
+        return _audit;
       }
 
       // Check medium/low findings
-      if (audit.mediumCount > 0 && !options.allowMedium) {
-        console.warn(`⚠️  Medium severity findings: ${audit.mediumCount}`);
+      if (_audit.mediumCount > 0 && !_options.allowMedium) {
+        console.warn(`⚠️  Medium severity findings: ${_audit.mediumCount}`);
         console.warn(`   Use --allow-medium to proceed anyway`);
-        return { ...audit, passed: false };
+        return { ..._audit, passed: false };
       }
 
-      console.log(`✅ Skill audit PASSED`);
-      console.log(`   Duration: ${audit.scanDurationMs}ms`);
+      console.log(`✅ Skill _audit PASSED`);
+      console.log(`   Duration: ${_audit.scanDurationMs}ms`);
       console.log(
-        `   Findings: ${audit.mediumCount} medium, ${audit.lowCount} low, ${audit.infoCount} info`,
+        `   Findings: ${_audit.mediumCount} medium, ${_audit.lowCount} low, ${_audit.infoCount} info`,
       );
 
-      this.installedSkills.set(audit.skillName, audit);
-      return audit;
+      this.installedSkills.set(_audit.skillName, _audit);
+      return _audit;
     }
 
-    // Skip audit only for trusted internal skills
-    console.log(`⚠️  Skipping audit (trusted internal skill)`);
+    // Skip _audit only for trusted internal skills
+    console.log(`⚠️  Skipping _audit (trusted internal skill)`);
     return {
       skillName: "trusted-internal",
-      skillPath,
+      _skillPath,
       passed: true,
       findings: [],
       criticalCount: 0,
@@ -742,14 +752,14 @@ export class SafeSkillImporter {
       lowCount: 0,
       infoCount: 0,
       scanDurationMs: 0,
-      auditLog: ["Audit skipped - trusted internal skill"],
+      _auditLog: ["Audit skipped - trusted internal skill"],
     };
   }
 
   /**
    * Import from remote URL with verification
    */
-  async importFromUrl(url: string, options: SafeImportOptions = {}): Promise<SkillAuditResult> {
+  async importFromUrl(url: string, _options: SafeImportOptions = {}): Promise<SkillAuditResult> {
     console.log(`🌐 Downloading skill from: ${url}`);
 
     // Verify URL is safe
@@ -759,11 +769,11 @@ export class SafeSkillImporter {
     }
 
     // Download to temp location
-    const tempPath = `/tmp/skill-audit-${Date.now()}`;
+    const tempPath = `/tmp/skill-_audit-${Date.now()}`;
     // TODO: Implement download
 
     // Audit downloaded skill
-    return this.importSkill(tempPath, options);
+    return this.importSkill(tempPath, _options);
   }
 
   /**
@@ -773,10 +783,10 @@ export class SafeSkillImporter {
     owner: string,
     repo: string,
     path: string = "",
-    options: SafeImportOptions = {},
+    _options: SafeImportOptions = {},
   ): Promise<SkillAuditResult> {
     const url = `https://github.com/${owner}/${repo}/tree/main/${path}`;
-    return this.importFromUrl(url, options);
+    return this.importFromUrl(url, _options);
   }
 
   /**
@@ -784,7 +794,7 @@ export class SafeSkillImporter {
    */
   async importCollection(
     collectionUrl: string,
-    options: SafeImportOptions = {},
+    _options: SafeImportOptions = {},
   ): Promise<SkillAuditResult[]> {
     console.log(`📚 Importing skill collection: ${collectionUrl}`);
 
@@ -801,46 +811,37 @@ export class SafeSkillImporter {
    * Check if URL is in trusted domains
    */
   private isTrustedUrl(url: string): boolean {
-    const trustedDomains = [
-      "github.com",
-      "raw.githubusercontent.com",
-      "gitlab.com",
-      "bitbucket.org",
-      "unpkg.com",
-      "jsdelivr.net",
-    ];
-
-    return trustedDomains.some((domain) => url.includes(domain));
+    return this._auditor.isTrustedUrl(url);
   }
 
   /**
    * Move suspicious skill to quarantine
    */
   private async quarantineSkill(
-    skillPath: string,
+    _skillPath: string,
     quarantinePath: string,
-    audit: SkillAuditResult,
+    _audit: SkillAuditResult,
   ): Promise<void> {
     console.log(`🚫 Quarantining skill to: ${quarantinePath}`);
-    // TODO: Implement quarantine (move files, save audit report)
+    // TODO: Implement quarantine (move files, save _audit report)
   }
 
   /**
-   * Get audit history for installed skills
+   * Get _audit history for installed skills
    */
   getAuditHistory(): Map<string, SkillAuditResult> {
     return this.installedSkills;
   }
 
   /**
-   * Re-audit all installed skills
+   * Re-_audit all installed skills
    */
-  async reauditAll(): Promise<SkillAuditResult[]> {
+  async re_auditAll(): Promise<SkillAuditResult[]> {
     const results: SkillAuditResult[] = [];
 
     for (const [name, previousAudit] of this.installedSkills) {
-      console.log(`🔄 Re-auditing: ${name}`);
-      const newAudit = await this.auditor.auditSkill(previousAudit.skillPath);
+      console.log(`🔄 Re-_auditing: ${name}`);
+      const newAudit = await this._auditor._auditSkill(previousAudit._skillPath);
       this.installedSkills.set(name, newAudit);
       results.push(newAudit);
     }
@@ -853,9 +854,9 @@ export class SafeSkillImporter {
 // CLI Integration
 // ============================================================================
 
-export function createSkillAuditCommands(auditor: SkillAuditor, importer: SafeSkillImporter) {
+export function createSkillAuditCommands(_auditor: SkillAuditor, importer: SafeSkillImporter) {
   return {
-    "skill-audit": {
+    "skill-_audit": {
       description: "Audit a skill for security vulnerabilities",
       handler: async (args: { path: string; quick?: boolean }) => {
         const { path, quick } = args;
@@ -864,7 +865,7 @@ export function createSkillAuditCommands(auditor: SkillAuditor, importer: SafeSk
           // Quick screen only
           const fs = await import("fs/promises");
           const code = await fs.readFile(path, "utf-8");
-          const findings = await auditor.quickScreen(code, path);
+          const findings = await _auditor.quickScreen(code, path);
 
           console.log(`\n⚡ Quick Screen Results`);
           console.log(`=======================`);
@@ -879,8 +880,8 @@ export function createSkillAuditCommands(auditor: SkillAuditor, importer: SafeSk
           return { success: findings.length === 0, findings };
         }
 
-        // Full audit
-        const result = await auditor.auditSkill(path);
+        // Full _audit
+        const result = await _auditor._auditSkill(path);
 
         console.log(`\n🔍 Skill Audit Report`);
         console.log(`====================`);
@@ -911,7 +912,7 @@ export function createSkillAuditCommands(auditor: SkillAuditor, importer: SafeSk
     },
 
     "skill-import": {
-      description: "Import a skill with mandatory security audit",
+      description: "Import a skill with mandatory security _audit",
       handler: async (args: {
         path: string;
         allowMedium?: boolean;
@@ -928,13 +929,13 @@ export function createSkillAuditCommands(auditor: SkillAuditor, importer: SafeSk
           success: result.passed,
           skillName: result.skillName,
           installed: result.passed,
-          audit: result,
+          _audit: result,
         };
       },
     },
 
     "skill-import-github": {
-      description: "Import skill from GitHub with audit",
+      description: "Import skill from GitHub with _audit",
       handler: async (args: {
         owner: string;
         repo: string;
@@ -949,7 +950,7 @@ export function createSkillAuditCommands(auditor: SkillAuditor, importer: SafeSk
           success: result.passed,
           skillName: result.skillName,
           installed: result.passed,
-          audit: result,
+          _audit: result,
         };
       },
     },
@@ -979,8 +980,8 @@ export function createSkillAuditCommands(auditor: SkillAuditor, importer: SafeSk
       },
     },
 
-    "skill-audit-history": {
-      description: "View audit history for installed skills",
+    "skill-_audit-history": {
+      description: "View _audit history for installed skills",
       handler: async () => {
         const history = importer.getAuditHistory();
 
@@ -988,11 +989,11 @@ export function createSkillAuditCommands(auditor: SkillAuditor, importer: SafeSk
         console.log(`======================`);
         console.log(`Installed Skills: ${history.size}`);
 
-        for (const [name, audit] of history) {
+        for (const [name, _audit] of history) {
           console.log(`\n${name}:`);
-          console.log(`  Status: ${audit.passed ? "✅ PASSED" : "❌ FAILED"}`);
+          console.log(`  Status: ${_audit.passed ? "✅ PASSED" : "❌ FAILED"}`);
           console.log(
-            `  Findings: ${audit.criticalCount}C ${audit.highCount}H ${audit.mediumCount}M`,
+            `  Findings: ${_audit.criticalCount}C ${_audit.highCount}H ${_audit.mediumCount}M`,
           );
         }
 
